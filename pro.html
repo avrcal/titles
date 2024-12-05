@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Null's Brawl Mod Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        .section {
+            margin: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+        }
+        input, button, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .json-output {
+            white-space: pre-wrap;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Null's Brawl Mod Builder</h1>
+    <div class="section">
+        <label for="modTitle">Mod Title</label>
+        <input type="text" id="modTitle" placeholder="Enter mod title">
+        <label for="modDescription">Mod Description</label>
+        <textarea id="modDescription" placeholder="Enter mod description"></textarea>
+        <button onclick="setBaseData()">Set Base Data</button>
+    </div>
+    
+    <div class="section">
+        <h2>Tables & Rows</h2>
+        <label for="tableName">Table Name</label>
+        <input type="text" id="tableName" placeholder="Enter table name (without .csv)">
+        <label for="rowName">Row Name</label>
+        <input type="text" id="rowName" placeholder="Enter row name">
+        <label for="columnName">Column Name</label>
+        <input type="text" id="columnName" placeholder="Enter column name">
+        <label for="columnValue">Column Value</label>
+        <input type="text" id="columnValue" placeholder="Enter column value">
+        <button onclick="addModification()">Add Modification</button>
+    </div>
+    
+    <div class="section">
+        <button onclick="exportJSON()">Export JSON</button>
+        <div id="jsonDisplay" class="json-output"></div>
+    </div>
+
+    <script>
+        const modData = {
+            "@title": "",
+            "@description": "",
+        };
+
+        function setBaseData() {
+            const title = document.getElementById('modTitle').value;
+            const description = document.getElementById('modDescription').value;
+
+            if (!title || !description) {
+                alert("Please provide both title and description.");
+                return;
+            }
+
+            modData["@title"] = title;
+            modData["@description"] = description;
+
+            alert("Base data set successfully!");
+        }
+
+        function addModification() {
+            const tableName = document.getElementById('tableName').value;
+            const rowName = document.getElementById('rowName').value;
+            const columnName = document.getElementById('columnName').value;
+            const columnValue = document.getElementById('columnValue').value;
+
+            if (!tableName || !rowName || !columnName || !columnValue) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            // Ensure table exists
+            if (!modData[tableName]) {
+                modData[tableName] = {};
+            }
+
+            // Ensure row exists
+            if (!modData[tableName][rowName]) {
+                modData[tableName][rowName] = {};
+            }
+
+            // Add column value
+            try {
+                // Try to parse as JSON (for booleans or numbers)
+                modData[tableName][rowName][columnName] = JSON.parse(columnValue);
+            } catch {
+                // Fallback to string
+                modData[tableName][rowName][columnName] = columnValue;
+            }
+
+            alert(`Modification added to ${tableName} -> ${rowName} -> ${columnName}`);
+        }
+
+        function exportJSON() {
+            const jsonOutput = JSON.stringify(modData, null, 4);
+            document.getElementById('jsonDisplay').textContent = jsonOutput;
+
+            // Download JSON file
+            const blob = new Blob([jsonOutput], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'mod.json';
+            link.click();
+        }
+    </script>
+</body>
+</html>
