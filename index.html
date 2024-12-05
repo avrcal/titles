@@ -83,8 +83,8 @@
                 alert("Please enter a Brawler name.");
                 return;
             }
-            if (!jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]) {
-                jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`] = { "EN": "" };
+            if (!jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]) {
+                jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`] = { "EN": "" };
                 alert(`Brawler ${brawlerName} added!`);
             } else {
                 alert("Brawler already exists.");
@@ -98,8 +98,8 @@
                 alert("Please enter both Brawler name and Title.");
                 return;
             }
-            if (jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]) {
-                jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle;
+            if (jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]) {
+                jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle;
                 alert(`Title for ${brawlerName} updated!`);
             } else {
                 alert("Brawler not added yet.");
