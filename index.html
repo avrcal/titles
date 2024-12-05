@@ -15,7 +15,7 @@
         .input-group {
             margin-bottom: 15px;
         }
-        input[type="text"] {
+        input[type="text"], select {
             padding: 10px;
             width: 300px;
             margin-right: 10px;
@@ -54,6 +54,13 @@
             <input type="text" id="brawlerTitle" placeholder="Title">
             <button onclick="setBrawlerTitle()">Set Title</button>
         </div>
+        <div class="input-group">
+            <select id="languageSelector" onchange="updateLanguage()">
+                <option value="texts">English</option>
+                <option value="ar">Arabic</option>
+                <option value="ru">Russian</option>
+            </select>
+        </div>
     </div>
 
     <button onclick="saveJson()">Save JSON</button>
@@ -64,6 +71,8 @@
             "@description": "",
             "texts": {}
         };
+
+        let currentLanguage = "texts"; // Default to English
 
         function saveModTitle() {
             const title = document.getElementById('modTitle').value;
@@ -77,15 +86,26 @@
             alert("Mod description saved!");
         }
 
+        function updateLanguage() {
+            const language = document.getElementById('languageSelector').value;
+            currentLanguage = language;
+
+            if (!jsonData[currentLanguage]) {
+                jsonData[currentLanguage] = {};
+            }
+            alert(`Language switched to ${language.toUpperCase()}`);
+        }
+
         function addBrawler() {
             const brawlerName = document.getElementById('brawlerName').value.toUpperCase();
             if (!brawlerName) {
                 alert("Please enter a Brawler name.");
                 return;
             }
-            if (!jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]) {
-                jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`] = { "EN": "" };
-                alert(`Brawler ${brawlerName} added!`);
+
+            if (!jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`]) {
+                jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`] = {};
+                alert(`Brawler ${brawlerName} added for language ${currentLanguage.toUpperCase()}!`);
             } else {
                 alert("Brawler already exists.");
             }
@@ -94,13 +114,15 @@
         function setBrawlerTitle() {
             const brawlerName = document.getElementById('brawlerName').value.toUpperCase();
             const brawlerTitle = document.getElementById('brawlerTitle').value;
+
             if (!brawlerName || !brawlerTitle) {
                 alert("Please enter both Brawler name and Title.");
                 return;
             }
-            if (jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]) {
-                jsonData.texts[`TID_TITLE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle;
-                alert(`Title for ${brawlerName} updated!`);
+
+            if (jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`]) {
+                jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle; // Default title value in English
+                alert(`Title for ${brawlerName} updated in ${currentLanguage.toUpperCase()}!`);
             } else {
                 alert("Brawler not added yet.");
             }
