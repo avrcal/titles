@@ -68,8 +68,7 @@
     <script>
         const jsonData = {
             "@title": "",
-            "@description": "",
-            "texts": {}
+            "@description": ""
         };
 
         let currentLanguage = "texts"; // Default to English
@@ -90,9 +89,11 @@
             const language = document.getElementById('languageSelector').value;
             currentLanguage = language;
 
+            // Initialize the root key for the selected language if it doesn't exist
             if (!jsonData[currentLanguage]) {
                 jsonData[currentLanguage] = {};
             }
+
             alert(`Language switched to ${language.toUpperCase()}`);
         }
 
@@ -120,9 +121,13 @@
                 return;
             }
 
+            let langKey = "EN"; // Default to English
+            if (currentLanguage === "ar") langKey = "AR";
+            if (currentLanguage === "ru") langKey = "RU";
+
             if (jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`]) {
-                jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle; // Default title value in English
-                alert(`Title for ${brawlerName} updated in ${currentLanguage.toUpperCase()}!`);
+                jsonData[currentLanguage][`TID_TITLE_MASTERY_${brawlerName}`][langKey] = brawlerTitle;
+                alert(`Title for ${brawlerName} updated in ${langKey}!`);
             } else {
                 alert("Brawler not added yet.");
             }
