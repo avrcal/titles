@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nulls Brawl Mastery Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .brawler-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nulls Brawl Mastery Title Editor</h1>
+    <div id="main-section">
+        <div class="input-group">
+            <input type="text" id="modTitle" placeholder="Mod Title">
+            <button onclick="saveModTitle()">Set Mod Title</button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="modDescription" placeholder="Description Mod">
+            <button onclick="saveModDescription()">Set Description</button>
+        </div>
+    </div>
+
+    <div class="brawler-section">
+        <div class="input-group">
+            <input type="text" id="brawlerName" placeholder="Brawler Name">
+            <button onclick="addBrawler()">Add Brawler</button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="brawlerTitle" placeholder="Title">
+            <button onclick="setBrawlerTitle()">Set Title</button>
+        </div>
+    </div>
+
+    <button onclick="saveJson()">Save JSON</button>
+
+    <script>
+        const jsonData = {
+            "@title": "",
+            "@description": "",
+            "texts": {}
+        };
+
+        function saveModTitle() {
+            const title = document.getElementById('modTitle').value;
+            jsonData["@title"] = title;
+            alert("Mod title saved!");
+        }
+
+        function saveModDescription() {
+            const description = document.getElementById('modDescription').value;
+            jsonData["@description"] = description;
+            alert("Mod description saved!");
+        }
+
+        function addBrawler() {
+            const brawlerName = document.getElementById('brawlerName').value.toUpperCase();
+            if (!brawlerName) {
+                alert("Please enter a Brawler name.");
+                return;
+            }
+            if (!jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]) {
+                jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`] = { "EN": "" };
+                alert(`Brawler ${brawlerName} added!`);
+            } else {
+                alert("Brawler already exists.");
+            }
+        }
+
+        function setBrawlerTitle() {
+            const brawlerName = document.getElementById('brawlerName').value.toUpperCase();
+            const brawlerTitle = document.getElementById('brawlerTitle').value;
+            if (!brawlerName || !brawlerTitle) {
+                alert("Please enter both Brawler name and Title.");
+                return;
+            }
+            if (jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]) {
+                jsonData.texts[`TID_TILE_MASTERY_${brawlerName}`]["EN"] = brawlerTitle;
+                alert(`Title for ${brawlerName} updated!`);
+            } else {
+                alert("Brawler not added yet.");
+            }
+        }
+
+        function saveJson() {
+            const blob = new Blob([JSON.stringify(jsonData, null, 4)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "mastery_titles.json";
+            link.click();
+        }
+    </script>
+</body>
+</html>
