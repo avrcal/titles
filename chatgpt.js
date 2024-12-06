@@ -9,8 +9,58 @@ const jsonDisplay = document.getElementById("jsonDisplay");
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchRowsAndColumns();
+    fetchAPIKey();
 });
 
+// Fetch and Decrypt API Key
+let apiKey = "";
+
+function fetchAPIKey() {
+    fetch('data/api_key.json')  // Path to your JSON file
+        .then(response => response.json())
+        .then(data => {
+            const encryptedKey = data.encryptedKey;
+            apiKey = decryptAPIKey(encryptedKey, 'your_secret_passphrase');
+            appendAIMessage("API Key successfully decrypted.");
+        })
+        .catch(error => {
+            console.error("Error fetching the API key:", error);
+            appendAIMessage("Failed to fetch or decrypt the API key.");
+        });
+}
+
+function decryptAPIKey(encryptedKey, passphrase) {
+    const crypto = window.crypto || window.msCrypto;  // for IE11
+    const algorithm = 'AES-CBC';
+    
+    // Base64 decode the encrypted key and the IV
+    const iv = encryptedKey.slice(0, 16);  // First 16 bytes are IV
+    const encrypted = encryptedKey.slice(16);
+
+    const key = crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(passphrase),
+        { name: "AES-CBC" },
+        false,
+        ["decrypt"]
+    );
+
+    return key.then(function (cryptoKey) {
+        const ivBuffer = new TextEncoder().encode(iv);
+        const encryptedBuffer = new TextEncoder().encode(encrypted);
+        
+        return crypto.subtle.decrypt(
+            { name: algorithm, iv: ivBuffer },
+            cryptoKey,
+            encryptedBuffer
+        ).then(function (decrypted) {
+            const decoder = new TextDecoder();
+            return decoder.decode(decrypted);
+        });
+    });
+}
+
+// Example: Fetching rows and columns
 function fetchRowsAndColumns() {
     fetch("data/rows_columns.txt")
         .then(response => response.text())
@@ -81,8 +131,7 @@ You must validate the user's input and provide valid JSON modifications. If a re
 }
 
 async function fetchChatGPTResponse(systemPrompt, userInput) {
-    const secretKey = "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"; // Replace this with your ChatGPT secret key
-    const apiUrl = "https://api.openai.com/v1/completions";
+    const apiUrl = "https://api.openai.com/v1/chat/completions";
 
     const messages = [
         { role: "system", content: systemPrompt },
@@ -94,13 +143,20 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${secretKey}`,
+                Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4-mini",
+                model: "gpt-4", // Change to "gpt-3.5-turbo" if gpt-4 is unavailable
                 messages: messages,
             }),
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error response:", errorData);
+            document.getElementById("errorMessage").textContent = `Error: ${errorData.error.message}`;
+            return { error: true };
+        }
 
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
@@ -109,10 +165,12 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
                 json: data.choices[0].message.content,
             };
         } else {
+            document.getElementById("errorMessage").textContent = "No choices in response.";
             return { error: true };
         }
     } catch (error) {
         console.error("Error fetching ChatGPT response:", error);
+        document.getElementById("errorMessage").textContent = `Error: ${error.message}`;
         return { error: true };
     }
 }
