@@ -131,7 +131,7 @@ You must validate the user's input and provide valid JSON modifications. If a re
 }
 
 async function fetchChatGPTResponse(systemPrompt, userInput) {
-    const apiUrl = "https://api.openai.com/v1/chat/completions";
+    const apiUrl = "https://api.openai.com/v1/completions";
 
     const messages = [
         { role: "system", content: systemPrompt },
@@ -146,7 +146,7 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
                 Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4", // Change to "gpt-3.5-turbo" if gpt-4 is unavailable
+                model: "gpt-3.5-turbo", // Change to "gpt-3.5-turbo" if gpt-4 is unavailable
                 messages: messages,
             }),
         });
