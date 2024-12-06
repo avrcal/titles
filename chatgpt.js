@@ -6,64 +6,47 @@ const modData = {
 const tableData = {};
 const chatBox = document.getElementById("chatBox");
 const jsonDisplay = document.getElementById("jsonDisplay");
-
-let apiKey = "";  // Store the decrypted API key
+let decryptedApiKey = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+    fetchEncryptedKey();
     fetchRowsAndColumns();
-    fetchAPIKey();  // Fetch and decrypt the API key
 });
 
-// Fetch and decrypt the API key
-function fetchAPIKey() {
-    console.log("Fetching API key...");
-    fetch('data/api_key.json')  // Path to your encrypted JSON file
-        .then(response => response.json())
-        .then(data => {
-            const encryptedKey = data.encryptedKey;
-            const iv = Buffer.from(data.iv, 'hex');  // Convert the IV from hex to bytes
-            console.log("Encrypted Key and IV fetched:", encryptedKey, iv);
-            decryptAPIKey(encryptedKey, iv, 'your_secret_passphrase')
-                .then(decryptedKey => {
-                    apiKey = decryptedKey;  // Use the decrypted key
-                    appendAIMessage("API Key successfully decrypted.");
-                    console.log("Decrypted API Key:", apiKey); // Log decrypted key
-                })
-                .catch(error => {
-                    console.error("Decryption error:", error);
-                    appendAIMessage("Failed to decrypt the API key.");
-                });
-        })
-        .catch(error => {
-            console.error("Error fetching the API key:", error);
-            appendAIMessage("Failed to fetch or decrypt the API key.");
-        });
+async function fetchEncryptedKey() {
+    try {
+        const response = await fetch("data/config.json"); // Assuming config.json is in the data folder
+        const config = await response.json();
+        const encryptedKey = config.encryptedKey;
+        decryptedApiKey = atob(encryptedKey); // Decrypt the Base64 key
+    } catch (error) {
+        console.error("Error fetching or decrypting API key:", error);
+    }
 }
 
-// Decrypt the API Key using AES-256-CBC
-async function decryptAPIKey(encryptedKey, iv, passphrase) {
-    const decoder = new TextDecoder();
-    
-    // Convert encrypted key to a Uint8Array
-    const encryptedBytes = Uint8Array.from(Buffer.from(encryptedKey, 'hex'));
+function fetchRowsAndColumns() {
+    fetch("data/rows_columns.txt")
+        .then(response => response.text())
+        .then(data => {
+            const lines = data.split("\n").map(line => line.trim()).filter(line => line);
+            let currentTable = null;
 
-    // Use the Web Crypto API to decrypt
-    const key = await window.crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(passphrase),
-        { name: "AES-CBC" },
-        false,
-        ["decrypt"]
-    );
+            lines.forEach(line => {
+                if (line.includes(" rows:")) {
+                    const [table, rows] = line.split(" rows:").map(item => item.trim());
+                    currentTable = table;
+                    tableData[currentTable] = { rows: rows.split(",").map(row => row.trim()), columns: [] };
+                } else if (line.includes(" Column Names:")) {
+                    const [table, columns] = line.split(" Column Names:").map(item => item.trim());
+                    if (currentTable === table && tableData[currentTable]) {
+                        tableData[currentTable].columns = columns.split(",").map(col => col.trim());
+                    }
+                }
+            });
 
-    const decryptedBytes = await window.crypto.subtle.decrypt(
-        { name: "AES-CBC", iv: iv },
-        key,
-        encryptedBytes
-    );
-
-    // Convert the decrypted bytes to a string (UTF-8) and return it
-    return decoder.decode(decryptedBytes);
+            appendAIMessage("I have loaded the tables, rows, and columns from the file. You can now ask me to modify the JSON.");
+        })
+        .catch(error => console.error("Error fetching rows and columns:", error));
 }
 
 function appendUserMessage(message) {
@@ -95,8 +78,6 @@ Here are the available tables, rows, and columns: ${JSON.stringify(tableData)}.
 You must validate the user's input and provide valid JSON modifications. If a request is unclear, ask for clarification.
 `;
 
-    console.log("Sending message to ChatGPT...");
-
     const chatResponse = await fetchChatGPTResponse(systemPrompt, userInput);
     if (chatResponse.error) {
         appendAIMessage("Error: Unable to process your request.");
@@ -113,8 +94,8 @@ You must validate the user's input and provide valid JSON modifications. If a re
 }
 
 async function fetchChatGPTResponse(systemPrompt, userInput) {
-    if (!apiKey) {
-        console.error("API key is missing.");
+    if (!decryptedApiKey) {
+        appendAIMessage("Error: API key not loaded.");
         return { error: true };
     }
 
@@ -125,27 +106,18 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
         { role: "user", content: userInput },
     ];
 
-    console.log("Making API request with the following messages:", messages);
-
     try {
         const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${apiKey}`,
+                Authorization: `Bearer ${decryptedApiKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4", // Change to "gpt-3.5-turbo" if gpt-4 is unavailable
+                model: "gpt-4",
                 messages: messages,
             }),
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Error response:", errorData);
-            document.getElementById("errorMessage").textContent = `Error: ${errorData.error.message}`;
-            return { error: true };
-        }
 
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
@@ -154,12 +126,10 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
                 json: data.choices[0].message.content,
             };
         } else {
-            document.getElementById("errorMessage").textContent = "No choices in response.";
             return { error: true };
         }
     } catch (error) {
         console.error("Error fetching ChatGPT response:", error);
-        document.getElementById("errorMessage").textContent = `Error: ${error.message}`;
         return { error: true };
     }
 }
