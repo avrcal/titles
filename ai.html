@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT JSON Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f4f4f4;
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+        .chat-box div {
+            margin: 5px 0;
+        }
+        .chat-box .user {
+            text-align: right;
+            color: blue;
+        }
+        .chat-box .ai {
+            text-align: left;
+            color: green;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .json-output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ChatGPT JSON Builder</h1>
+    <div class="chat-container">
+        <div id="chatBox" class="chat-box"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your request...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <div class="json-output" id="jsonDisplay"></div>
+
+    <script src="chatgpt.js"></script>
+</body>
+</html>
