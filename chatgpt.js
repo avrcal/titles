@@ -81,7 +81,7 @@ You must validate the user's input and provide valid JSON modifications. If a re
 }
 
 async function fetchChatGPTResponse(systemPrompt, userInput) {
-    const apiKey = "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"; // Replace with your OpenAI API key
+    const secretKey = "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"; // Replace this with your ChatGPT secret key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
 
     const messages = [
@@ -94,10 +94,10 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${apiKey}`,
+                Authorization: `Bearer ${secretKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4",
+                model: "gpt-4-mini",
                 messages: messages,
             }),
         });
@@ -119,4 +119,4 @@ async function fetchChatGPTResponse(systemPrompt, userInput) {
 
 function updateJSONDisplay() {
     jsonDisplay.textContent = JSON.stringify(modData, null, 4);
-  }
+}
