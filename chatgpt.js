@@ -82,7 +82,7 @@ You must validate the user's input and provide valid JSON modifications. If a re
 
 async function fetchChatGPTResponse(systemPrompt, userInput) {
     const secretKey = "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"; // Replace this with your ChatGPT secret key
-    const apiUrl = "https://api.openai.com/v1/chat/completions";
+    const apiUrl = "https://api.openai.com/v1/completions";
 
     const messages = [
         { role: "system", content: systemPrompt },
