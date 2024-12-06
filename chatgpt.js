@@ -21,7 +21,7 @@ function fetchAPIKey() {
         .then(data => {
             const encryptedKey = data.encryptedKey;
             apiKey = decryptAPIKey(encryptedKey, 'your_secret_passphrase');
-            appendAIMessage("API Key successfully decrypted.");
+            appendAIMessage("Hello");
         })
         .catch(error => {
             console.error("Error fetching the API key:", error);
